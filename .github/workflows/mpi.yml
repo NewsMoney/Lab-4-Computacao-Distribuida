@@ -1,4 +1,4 @@
-name: MPI CI Avançado (Corrigido)
+name: MPI CI Avançado
 
 on:
   push:
@@ -17,12 +17,12 @@ jobs:
       - name: Instalar cppcheck
         run: sudo apt-get update && sudo apt-get install -y cppcheck
 
-      - name: Verificar arquivos presentes
+      - name: Listar arquivos para depuração
         run: ls -R
 
       - name: Rodar cppcheck
         # Adicionamos --force para garantir que ele processe o arquivo mesmo com macros complexas
-        # E especificamos o caminho relativo explicitamente
+        # E especificamos o caminho relativo explicitamente. O 'ls -R' acima ajudará a confirmar o caminho correto.
         run: cppcheck --enable=all --error-exitcode=1 --force ./soma_quadrados_MPI.c
 
   # Job 2: Compilação
