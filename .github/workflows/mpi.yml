@@ -23,7 +23,8 @@ jobs:
       - name: Rodar cppcheck
         # Adicionamos --force para garantir que ele processe o arquivo mesmo com macros complexas
         # E especificamos o caminho relativo explicitamente. O 'ls -R' acima ajudará a confirmar o caminho correto.
-        run: cppcheck --enable=all --error-exitcode=1 --force ./soma_quadrados_MPI.c
+        # Correção: Usar '.' para escanear o diretório atual recursivamente.
+        run: cppcheck --enable=all --error-exitcode=1 --force .
 
   # Job 2: Compilação
   build:
