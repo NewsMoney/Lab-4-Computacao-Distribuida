@@ -2,16 +2,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 40
+
 
 int main(int argc, char *argv[]) {
-    int rank, size;
+        int rank, size;
+    int N; // Agora N será lido do argumento de linha de comando
     int *global_array = NULL;
     int local_size;
     int *local_array;
     int local_sum = 0, global_sum = 0;
 
     MPI_Init(&argc, &argv);
+
+    if (argc < 2) {
+        if (rank == 0) {
+            fprintf(stderr, "Uso: %s <N>\n", argv[0]);
+        }
+        MPI_Finalize();
+        return 1;
+    }
+
+    N = atoi(argv[1]);
+    if (N <= 0) {
+        if (rank == 0) {
+            fprintf(stderr, "Erro: N deve ser um número inteiro positivo.\n");
+        }
+        MPI_Finalize();
+        return 1;
+    }
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
