@@ -2,53 +2,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
+// Definimos N como 40 por padrão, mas o código aceita N via argumento de linha de comando
+#define DEFAULT_N 40
 
 int main(int argc, char *argv[]) {
-        int rank, size;
-    int N; // Agora N será lido do argumento de linha de comando
+    int rank = 0, size = 0; // Inicialização explícita para evitar alertas de linters
     int *global_array = NULL;
     int local_size;
     int *local_array;
     int local_sum = 0, global_sum = 0;
+    int n_value = DEFAULT_N;
 
     MPI_Init(&argc, &argv);
-
-    if (argc < 2) {
-        if (rank == 0) {
-            fprintf(stderr, "Uso: %s <N>\n", argv[0]);
-        }
-        MPI_Finalize();
-        return 1;
-    }
-
-    N = atoi(argv[1]);
-    if (N <= 0) {
-        if (rank == 0) {
-            fprintf(stderr, "Erro: N deve ser um número inteiro positivo.\n");
-        }
-        MPI_Finalize();
-        return 1;
-    }
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+    // Se um argumento for passado, usamos como o valor de N
+    if (argc > 1) {
+        n_value = atoi(argv[1]);
+    }
+
     // Garantir divisão exata
-    if (N % size != 0) {
+    if (n_value % size != 0) {
         if (rank == 0) {
-            printf("Erro: N (%d) não é divisível pelo número de processos (%d)\n", N, size);
+            printf("Erro: N (%d) não é divisível pelo número de processos (%d)\n", n_value, size);
         }
         MPI_Finalize();
         return 1;
     }
 
-    local_size = N / size;
+    local_size = n_value / size;
     local_array = (int *)malloc(local_size * sizeof(int));
 
     // Root cria o vetor
     if (rank == 0) {
-        global_array = (int *)malloc(N * sizeof(int));
-        for (int i = 0; i < N; i++) {
+        global_array = (int *)malloc(n_value * sizeof(int));
+        for (int i = 0; i < n_value; i++) {
             global_array[i] = i + 1;
         }
     }
@@ -77,17 +66,17 @@ int main(int argc, char *argv[]) {
 
     // Root valida
     if (rank == 0) {
-        int soma_sequencial = 0;
+        long long soma_sequencial = 0; // Usar long long para evitar overflow em N grandes
 
         // cálculo sequencial
-        for (int i = 1; i <= N; i++) {
-            soma_sequencial += i * i;
+        for (int i = 1; i <= n_value; i++) {
+            soma_sequencial += (long long)i * i;
         }
 
         printf("\nProcesso 0: soma paralela dos quadrados = %d\n", global_sum);
-        printf("Processo 0: soma sequencial esperada    = %d\n", soma_sequencial);
+        printf("Processo 0: soma sequencial esperada    = %lld\n", soma_sequencial);
 
-        if (global_sum == soma_sequencial) {
+        if ((long long)global_sum == soma_sequencial) {
             printf("✅ Os valores conferem!\n");
         } else {
             printf("❌ Os valores NÃO conferem!\n");
