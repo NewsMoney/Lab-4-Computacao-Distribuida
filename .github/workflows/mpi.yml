@@ -40,8 +40,8 @@ jobs:
           sudo apt-get install -y openmpi-bin libopenmpi-dev
 
       - name: Compilar
-        # Certifique-se de que o nome do arquivo aqui corresponde ao seu arquivo .c
-        run: mpicc soma_quadrados_MPI.c -o soma_mpi
+        # CORREÇÃO: Nome do arquivo C ajustado para 'soma_de_quadrados.c'
+        run: mpicc soma_de_quadrados.c -o soma_mpi
 
       - name: Upload binário
         uses: actions/upload-artifact@v4
@@ -73,7 +73,7 @@ jobs:
       - name: Executar com N=${{ matrix.n_value }} e np=${{ matrix.np }}
         run: |
           chmod +x soma_mpi
-          # Usamos mpirun com --oversubscribe para permitir rodar mais processos que cores se necessário
+          # CORREÇÃO: Nome do arquivo C ajustado para 'soma_de_quadrados.c' no comando de execução
           mpirun --allow-run-as-root --oversubscribe -np ${{ matrix.np }} ./soma_mpi ${{ matrix.n_value }} | tee output.txt
 
       - name: Validar resultado
@@ -95,6 +95,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
       - name: Instalar MPI e Valgrind
         run: |
           sudo apt-get update
@@ -108,4 +111,5 @@ jobs:
       - name: Rodar Valgrind
         run: |
           chmod +x soma_mpi
+          # CORREÇÃO: Nome do arquivo C ajustado para 'soma_de_quadrados.c' no comando de execução
           mpirun --allow-run-as-root -np 2 valgrind --leak-check=full --error-exitcode=1 ./soma_mpi 20
